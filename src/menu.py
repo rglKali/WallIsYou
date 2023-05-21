@@ -4,10 +4,8 @@ from src.libs import fltk as tk
 
 class Play(TextButton):
     def on_click(self):
-        from src.game import Game
-        with State.proxy as storage:
-            storage['map'] = 'map_test.txt'
-        State.change_state(Game())
+        from src.map import Map
+        State.change_state(Map())
 
 
 class Exit(TextButton):
@@ -21,6 +19,7 @@ class Menu(State):
         self.exit = Exit(360, 280, 120, 60, 'Exit!', '#FF004D')
 
     def on_event(self, ev: tk.FltkEvent):
+        super().on_event(ev)
         if tk.type_ev(ev) in ('ClicGauche', 'ClicDroit'):
             x, y = tk.abscisse(ev), tk.ordonnee(ev)
             self.play.click(x, y)

@@ -19,4 +19,5 @@ class Over(State):
         self.handler.draw()
 
     def on_event(self, ev: tk.FltkEvent):
+        super().on_event(ev)
         self.handler.click(self.handler.x, self.handler.y)

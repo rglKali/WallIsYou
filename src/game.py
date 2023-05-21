@@ -8,7 +8,7 @@ class Game(State):
         with self.proxy as storage:
             name = storage['map']
 
-        self.dungeon = Dungeon.from_file(f'assets/maps/{name}')
+        self.dungeon = Dungeon.from_file(f'assets/maps/{name}.txt')
         self.dx = 720 / self.dungeon.width
         self.dy = 480 / self.dungeon.height
         self.texture_map = {
@@ -41,6 +41,7 @@ class Game(State):
                 tk.texte(entity.x * self.dx, entity.y * self.dy, entity.level)
 
     def on_event(self, ev: tk.FltkEvent):
+        super().on_event(ev)
         if tk.type_ev(ev) == 'Touche' and tk.touche(ev) == 'space':
             if self.dungeon.update_dungeon():
                 self.over()

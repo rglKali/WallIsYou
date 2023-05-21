@@ -186,7 +186,6 @@ class Dungeon:
 
         if len(paths):
             paths.sort(key=lambda tup: (tup[0].symbol, tup[0].level))
-            print(paths)
             return paths[-1][1]
         return
 
@@ -202,7 +201,6 @@ class Dungeon:
 
             for entity in [e for e in self.entities if e.symbol != 'A' and e.alive]:
                 if entity.room == player.room:
-                    print(entity, player)
                     if entity.level > player.level:
                         player.alive = False
                     else:
@@ -225,4 +223,4 @@ class Dungeon:
 
 
 if __name__ == '__main__':
-    print(Dungeon.from_file('../assets/maps/map_test.txt').bfs())
+    print(Dungeon.from_file('../assets/maps/map_test.txt'))

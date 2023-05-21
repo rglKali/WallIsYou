@@ -1,4 +1,4 @@
-from src.libs.fltk import efface_tout, FltkEvent
+from src.libs.fltk import efface_tout, FltkEvent, type_ev
 from typing import Optional
 
 
@@ -32,6 +32,9 @@ class State:
         """
         Event logic
         """
+        if type_ev(ev) == 'Quitte':
+            State.change_state(None)
+            return
 
     def on_exit(self):
         """

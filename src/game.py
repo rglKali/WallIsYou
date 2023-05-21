@@ -37,7 +37,7 @@ class Game(State):
 
         for entity in self.dungeon.entities:
             if entity.alive:
-                tk.image((entity.x + 0.5) * self.dx, (entity.y + 0.5) * self.dy, f'assets/media/{self.texture_map[entity.symbol]}', self.dx * 0.8, self.dy * 0.8)
+                tk.image((entity.x + 0.5) * self.dx, (entity.y + 0.5) * self.dy, f'assets/media/{self.texture_map[entity.symbol]}', int(self.dx * 0.6), int(self.dy * 0.6))
                 tk.texte(entity.x * self.dx, entity.y * self.dy, entity.level)
 
     def on_event(self, ev: tk.FltkEvent):

@@ -122,7 +122,7 @@ class Entity:
         return self.dungeon.room(self.x, self.y)
 
     def __repr__(self):
-        return f'<Entity(x={self.x}, y={self.y}, symbol=\'{self.symbol}\', alive={self.alive})>'
+        return f'<Entity(x={self.x}, y={self.y}, symbol=\'{self.symbol}\', level={self.level}, alive={self.alive})>'
 
 
 class Dungeon:
@@ -143,7 +143,7 @@ class Dungeon:
                 if any([line.startswith(symbol) for symbol in Room.char_map.keys()]):
                     for x, value in enumerate(line):
                         self.rooms[(x, y)] = Room(self, value, x, y)
-                        self.width, self.height = x, y
+                        self.width, self.height = x + 1, y + 1
                 else:
                     self.entities += [Entity(self, *line.split())]
 
@@ -162,7 +162,7 @@ class Dungeon:
         Returns the sortest path to the highest priority target from the available, if any
         """
         player = self.entities[0]
-        targets = self.entities[1:].copy()
+        targets = [e for e in self.entities if e.symbol != 'A' and e.alive]
         paths = []
 
         visited = set()
@@ -186,6 +186,7 @@ class Dungeon:
 
         if len(paths):
             paths.sort(key=lambda tup: (tup[0].symbol, tup[0].level))
+            print(paths)
             return paths[-1][1]
         return
 
@@ -199,15 +200,16 @@ class Dungeon:
         if path is not None:
             player.move(path[1])
 
-            for entity in self.entities[1:]:
+            for entity in [e for e in self.entities if e.symbol != 'A' and e.alive]:
                 if entity.room == player.room:
+                    print(entity, player)
                     if entity.level > player.level:
                         player.alive = False
                     else:
                         entity.alive = False
                         player.level += 1
 
-        return player.alive or not len([d for d in self.dragons if d.alive])
+        return not player.alive or not len([d for d in self.dragons if d.alive])
 
     @property
     def player(self):

@@ -71,21 +71,25 @@ class Room:
         """
         neighbors = set()
         if self.top:
-            top = self.dungeon.rooms.get((self.x, self.y - 1))
+            top = self.dungeon.room(self.x, self.y - 1)
             neighbors.add(top) if top is not None and top.bottom else None
         if self.right:
-            right = self.dungeon.rooms.get((self.x + 1, self.y))
+            right = self.dungeon.room(self.x + 1, self.y)
             neighbors.add(right) if right is not None and right.left else None
         if self.bottom:
-            bottom = self.dungeon.rooms.get((self.x, self.y + 1))
+            bottom = self.dungeon.room(self.x, self.y + 1)
             neighbors.add(bottom) if bottom is not None and bottom.top else None
         if self.left:
-            left = self.dungeon.rooms.get((self.x - 1, self.y))
+            left = self.dungeon.room(self.x - 1, self.y)
             neighbors.add(left) if left is not None and left.right else None
         return neighbors
 
+    @property
+    def symbol(self):
+        return Room.repr_map[self.value]
+
     def __repr__(self):
-        return f'<Room(x={self.x}, y={self.y}, symbol=\'{Room.repr_map[self.value]}\')>'
+        return f'<Room(x={self.x}, y={self.y}, symbol=\'{self.symbol}\')>'
 
 
 class Entity:
@@ -98,6 +102,26 @@ class Entity:
         self.x = x
         self.y = y
         self.level = level or 1
+        self.alive = True
+
+    def move(self, room: Room):
+        """
+        Moves the entity to the given room
+        """
+        self.x, self.y = room.x, room.y
+
+    def kill(self):
+        """
+        Kill the entity
+        """
+        self.alive = False
+
+    @property
+    def symbol(self):
+        """
+        Returns the Entity base symbol
+        """
+        return Entity.repr_map[self.value]
 
     @property
     def room(self):
@@ -107,7 +131,7 @@ class Entity:
         return self.dungeon.rooms.get((self.x, self.y))
 
     def __repr__(self):
-        return f'<Entity(x={self.x}, y={self.y}, symbol=\'{Room.repr_map[self.value]}\')>'
+        return f'<Entity(x={self.x}, y={self.y}, symbol=\'{self.symbol}\', alive={self.alive})>'
 
 
 class Dungeon:
@@ -128,8 +152,16 @@ class Dungeon:
 
         self.entities.sort(key=lambda ent: (ent.value, ent.level))
 
-    def bfs(self):
-        # Get the shortest path to the most-priority target
+    def room(self, x: int, y: int) -> Room:
+        """
+        Returns the room in the x, y coords, if exists
+        """
+        return self.rooms.get((x, y))
+
+    def bfs(self) -> Optional[List[Room]]:
+        """
+        Returns the sortest path to the highest priority target from the available, if any
+        """
         player = self.entities[0]
         targets = self.entities[1:].copy()
         paths = []
@@ -153,5 +185,39 @@ class Dungeon:
                     if neighbor not in visited:
                         queue.append((neighbor, path + [neighbor]))
 
-        paths.sort(key=lambda tup: (tup[0].value, tup[0].level))
-        return paths[-1]
+        if len(paths):
+            paths.sort(key=lambda tup: (tup[0].value, tup[0].level))
+            return paths[-1]
+        return
+
+    def update_dungeon(self) -> bool:
+        """
+        Updates the dungeon. Returns False, if the game is over, otherwise True
+        """
+        path = self.bfs()
+        player = self.entities[0]
+
+        if path is not None:
+            player.move(path[1])
+
+            for entity in self.entities[1:]:
+                if entity.room == player.room:
+                    if entity.level > player.level:
+                        player.alive = False
+                    else:
+                        entity.alive = False
+                        player.level += 1
+
+        return player.alive or not len([d for d in self.dragons if d.alive])
+
+    @property
+    def player(self):
+        return self.entities[0]
+
+    @property
+    def dragons(self):
+        return [ent for ent in self.entities if ent.symbol == 'D']
+
+    @property
+    def treasure(self):
+        return self.entities[-1]

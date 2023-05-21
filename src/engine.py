@@ -122,15 +122,11 @@ class Dungeon:
             for y, line in enumerate(lines):
                 if any([line.startswith(symbol) for symbol in Room.char_map.keys()]):
                     for x, value in enumerate(line):
-                        self.rooms[(x, y)] = Room(value, x, y)
+                        self.rooms[(x, y)] = Room(self, value, x, y)
                 elif any([line.startswith(symbol) for symbol in Entity.char_map.keys()]):
-                    self.entities += [Entity(*line.split())]
+                    self.entities += [Entity(self, *line.split())]
 
         self.entities.sort(key=lambda ent: (ent.value, ent.level))
-        # Set up relations between rooms
-        """
-        todo
-        """
 
     def bfs(self):
         # Get the shortest path to the most-priority target

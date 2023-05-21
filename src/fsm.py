@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 
 
 class State:
@@ -11,10 +11,14 @@ class State:
         cls.current.on_enter()
 
     def on_enter(self):
-        pass
+        """
+        Code to be executed on state enter
+        """
 
     def on_exit(self):
-        pass
+        """
+        Code to be executed on state exit
+        """
 
     def on_update(self):
         pass

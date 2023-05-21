@@ -100,15 +100,12 @@ class Room:
 
 
 class Entity:
-    char_map = {'A': 0, 'D': 1, 'T': 2}
-    repr_map = {0: 'A', 1: 'D', 2: 'T'}
-
-    def __init__(self, dungeon: 'Dungeon', value: str, x: int, y: int, level: int = None):
+    def __init__(self, dungeon: 'Dungeon', value: str, x: str, y: str, level: str = None):
         self.dungeon = dungeon
-        self.value = Entity.char_map[value]
-        self.x = x
-        self.y = y
-        self.level = level or 1
+        self.symbol = value
+        self.x = int(x)
+        self.y = int(y)
+        self.level = int(level) if level is not None else 1
         self.alive = True
 
     def move(self, room: Room):
@@ -118,18 +115,11 @@ class Entity:
         self.x, self.y = room.x, room.y
 
     @property
-    def symbol(self):
-        """
-        Returns the Entity base symbol
-        """
-        return Entity.repr_map[self.value]
-
-    @property
     def room(self):
         """
         Returns the room, where the Entity is located
         """
-        return self.dungeon.rooms.get((self.x, self.y))
+        return self.dungeon.room(self.x, self.y)
 
     def __repr__(self):
         return f'<Entity(x={self.x}, y={self.y}, symbol=\'{self.symbol}\', alive={self.alive})>'
@@ -142,19 +132,24 @@ class Dungeon:
         self.width = 0
         self.height = 0
 
-    def read_file(self, filename: str):
+    @classmethod
+    def from_file(cls, filename: str):
+        self = cls()
+
         # Decode the file
         with open(filename) as f:
-            lines = f.readlines()
+            lines = f.read().split('\n')
             for y, line in enumerate(lines):
                 if any([line.startswith(symbol) for symbol in Room.char_map.keys()]):
                     for x, value in enumerate(line):
                         self.rooms[(x, y)] = Room(self, value, x, y)
                         self.width, self.height = x, y
-                elif any([line.startswith(symbol) for symbol in Entity.char_map.keys()]):
+                else:
                     self.entities += [Entity(self, *line.split())]
 
-        self.entities.sort(key=lambda ent: (ent.value, ent.level))
+        self.entities.sort(key=lambda ent: (ent.symbol, ent.level))
+
+        return self
 
     def room(self, x: int, y: int) -> Room:
         """
@@ -190,8 +185,8 @@ class Dungeon:
                         queue.append((neighbor, path + [neighbor]))
 
         if len(paths):
-            paths.sort(key=lambda tup: (tup[0].value, tup[0].level))
-            return paths[-1]
+            paths.sort(key=lambda tup: (tup[0].symbol, tup[0].level))
+            return paths[-1][1]
         return
 
     def update_dungeon(self) -> bool:
@@ -225,3 +220,7 @@ class Dungeon:
     @property
     def treasure(self):
         return self.entities[-1]
+
+
+if __name__ == '__main__':
+    print(Dungeon.from_file('../assets/maps/map_test.txt').bfs())

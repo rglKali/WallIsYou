@@ -2,6 +2,13 @@ from collections import deque
 from typing import Optional, List, Dict
 
 
+__all__ = [
+    'Dungeon',
+    'Room',
+    'Entity'
+]
+
+
 class Room:
     char_map = {
         '╨': 1, '╞': 2, '╥': 4, '╡': 8,
@@ -110,12 +117,6 @@ class Entity:
         """
         self.x, self.y = room.x, room.y
 
-    def kill(self):
-        """
-        Kill the entity
-        """
-        self.alive = False
-
     @property
     def symbol(self):
         """
@@ -138,6 +139,8 @@ class Dungeon:
     def __init__(self):
         self.rooms: Dict[tuple[int, int]: Room] = {}
         self.entities: List[Entity] = []
+        self.width = 0
+        self.height = 0
 
     def read_file(self, filename: str):
         # Decode the file
@@ -147,6 +150,7 @@ class Dungeon:
                 if any([line.startswith(symbol) for symbol in Room.char_map.keys()]):
                     for x, value in enumerate(line):
                         self.rooms[(x, y)] = Room(self, value, x, y)
+                        self.width, self.height = x, y
                 elif any([line.startswith(symbol) for symbol in Entity.char_map.keys()]):
                     self.entities += [Entity(self, *line.split())]
 
